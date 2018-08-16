@@ -10,6 +10,10 @@ Environments are created under `.env`, with a version-specific prefix.
 Each environment is updated to include the contents of `environment.yml`
 for before invoking `pytest.` See `tasks.py` for the meat-and-potatos.
 
+## Requirements
+
+1. `conda` >= 4.5, `attrs`, `invoke`
+
 ## Examples
 
 To list commands:
@@ -21,13 +25,13 @@ invoke -l
 To run all test envs:
 
 ```sh
-invoke -e run
+invoke -e
 ```
 
 To run a single test env:
 
 ```sh
-invoke -e py36.run
+invoke -e py36
 ```
 
 To setup a test env:
