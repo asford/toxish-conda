@@ -1,4 +1,5 @@
 dependencies:
   - python
+  - ipython
   - pytorch
   - pytest

@@ -2,7 +2,6 @@ import os
 
 import functools
 
-
 import collections
 from typing import Tuple
 
@@ -10,7 +9,6 @@ import invoke
 from invoke import Collection
 
 import attr
-
 
 # Workaround for invoke dedupe only inspecting function body,
 # and not respecting function closure or method __self__
@@ -49,7 +47,7 @@ def Task(f, *args, **kwargs):
 
 
 def _tuple_str(s):
-    return (s,) if isinstance(s, str) else tuple(s)
+    return (s, ) if isinstance(s, str) else tuple(s)
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -92,11 +90,11 @@ class CondaRun:
 
 
 def setup_envs(
-    test_command,
-    env_to_pins,
-    env_prefix=".env",
-    env_files="environment.yml",
-    col=None,
+        test_command,
+        env_to_pins,
+        env_prefix=".env",
+        env_files="environment.yml",
+        col=None,
 ):
     if col is None:
         col = Collection()
@@ -104,9 +102,8 @@ def setup_envs(
     all_tasks = collections.defaultdict(list)
 
     for env_name, env_pins in env_to_pins.items():
-        run = CondaRun(
-            test_command, f"{env_prefix}/{env_name}", env_pins, env_files
-        )
+        run = CondaRun(test_command, f"{env_prefix}/{env_name}", env_pins,
+                       env_files)
 
         env_col = run.bind(Collection(env_name))
 
@@ -122,8 +119,7 @@ def setup_envs(
                 pre=tasks,
                 name=task_name,
                 default=(task_name == "run"),
-            )
-        )
+            ))
 
     return col
 
@@ -138,4 +134,10 @@ ns = setup_envs(
     },
 )
 
-ns = setup_envs(Collection(), envs)
+
+@task(ns["py37.setup"])
+def ipython(c):
+    c.run(".env/py37/bin/ipython", pty=True)
+
+
+ns.add_task(ipython)

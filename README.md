@@ -35,6 +35,12 @@ To run all test envs:
 invoke -e
 ```
 
+To launch ipython within an env:
+
+```sh
+invoke -l ipython
+```
+
 To run a single test env:
 
 ```sh
