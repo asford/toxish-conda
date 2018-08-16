@@ -10,44 +10,33 @@ from invoke import Collection
 
 import attr
 
-# Workaround for invoke dedupe only inspecting function body,
-# and not respecting function closure or method __self__
+
+class Task(invoke.Task):
+    """Workaround for invoke dedupe.
+
+    Modified task subclass that *only* checks for body function equality, rather
+    than deferring to function body comparison. Handles cases where task body
+    depends on lexical closure or __self__.
+    """
+
+    def __eq__(self, other):
+        """Compare body callable by equality."""
+        if self.name != other.name:
+            return False
+
+        return self.body == other.body
+
+    def __hash__(self):
+        """Dispatch to super hash to support task-as-key."""
+        return invoke.Task.__hash__(self)
 
 
-@attr.s(hash=True)
-class _fwrap:
-    """Wrap a function in callable object, breaking six.get_function_body."""
-
-    f = attr.ib()
-
-    def __attrs_post_init__(self):
-        functools.update_wrapper(self, self.f)
-
-    def __call__(self, *args, **kwargs):
-        return self.f(*args, **kwargs)
-
-
-@functools.wraps(invoke.task)
-def task(*args, **kwargs):
-    """Wrap invoke.task to prevent task-dedupe of closures."""
-    if len(args) == 1 and not isinstance(args[0], invoke.Task):
-        return invoke.task(_fwrap(args[0]), **kwargs)
-    else:
-
-        def _wrap(f):
-            return invoke.task(*args, **kwargs)(_fwrap(f))
-
-        return _wrap
-
-
-@functools.wraps(invoke.Task)
-def Task(f, *args, **kwargs):
-    """Wrap invoke.Task to prevent task-dedupe of closures."""
-    return invoke.Task(_fwrap(f), *args, **kwargs)
+# Bind workaround class into @task decorator.
+task = functools.partial(invoke.task, klass=Task)
 
 
 def _tuple_str(s):
-    return (s, ) if isinstance(s, str) else tuple(s)
+    return (s,) if isinstance(s, str) else tuple(s)
 
 
 @attr.s(auto_attribs=True, frozen=True)
@@ -90,11 +79,11 @@ class CondaRun:
 
 
 def setup_envs(
-        test_command,
-        env_to_pins,
-        env_prefix=".env",
-        env_files="environment.yml",
-        col=None,
+    test_command,
+    env_to_pins,
+    env_prefix=".env",
+    env_files="environment.yml",
+    col=None,
 ):
     if col is None:
         col = Collection()
@@ -102,8 +91,9 @@ def setup_envs(
     all_tasks = collections.defaultdict(list)
 
     for env_name, env_pins in env_to_pins.items():
-        run = CondaRun(test_command, f"{env_prefix}/{env_name}", env_pins,
-                       env_files)
+        run = CondaRun(
+            test_command, f"{env_prefix}/{env_name}", env_pins, env_files
+        )
 
         env_col = run.bind(Collection(env_name))
 
@@ -119,7 +109,8 @@ def setup_envs(
                 pre=tasks,
                 name=task_name,
                 default=(task_name == "run"),
-            ))
+            )
+        )
 
     return col
 
