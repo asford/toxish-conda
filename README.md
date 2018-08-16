@@ -12,7 +12,14 @@ for before invoking `pytest.` See `tasks.py` for the meat-and-potatos.
 
 ## Requirements
 
-1. `conda` >= 4.5, `attrs`, `invoke`
+1. `conda` >= 4.5, `attrs`, `invoke` in current shell. Eg:
+
+```bash
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+sh Miniconda3-latest-Linux-x86_64.sh
+
+conda install invoke attrs
+```
 
 ## Examples
 
@@ -42,9 +49,9 @@ invoke -e py27.setup
 
 ## Bugs
 
-* `invoke`'s de-dupe logic doesn't mesh well with the use of lexical
+* ~~~`invoke`'s de-dupe logic doesn't mesh well with the use of lexical
   closures in `tasks.py`. This requires disabling dedupe via
-  `invoke.yaml`.
+  `invoke.yaml`.~~~
 
 
 [invoke]: http://www.pyinvoke.org/

@@ -1,6 +1,4 @@
 dependencies:
   - python
-  - ipython
-  - invoke
   - pytorch
   - pytest
